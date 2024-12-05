@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CRM Form Filler</title>
+  <style>
+    body { width: 300px; padding: 10px; font-family: Arial, sans-serif; }
+    button, select, input { width: 100%; margin: 5px 0; padding: 5px; }
+    #feedback { margin-top: 10px; font-weight: bold; }
+    .mapping-row { margin-bottom: 10px; }
+    #mappingStatus { font-weight: bold; color: green; }
+  </style>
+</head>
+<body>
+  <h1>CRM Form Filler</h1>
+  <input type="text" id="formId" placeholder="Enter CRM Form ID">
+  <button id="fetchData">Fetch CRM Data</button>
+  <div id="mappingSection" style="display: none;">
+    <h2>Field Mapping</h2>
+    <div id="mappingStatus"></div>
+    <div id="fieldMappings"></div>
+    <button id="startMapping">Start Mapping</button>
+    <button id="stopMapping" style="display: none;">Stop Mapping</button>
+    <button id="saveMapping">Save Mapping</button>
+  </div>
+  <input type="text" id="configName" placeholder="Configuration Name">
+  <button id="saveConfiguration">Save Configuration</button>
+  <select id="savedConfigurations">
+    <option value="">Select a saved configuration</option>
+  </select>
+  <button id="runConfiguration">Run Configuration</button>
+  <button id="deleteConfiguration">Delete Configuration</button>
+  <div id="feedback"></div>
+  <script src="popup.js"></script>
+</body>
+</html>

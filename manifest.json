@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "CRM Form Filler",
+  "version": "1.0",
+  "description": "Map CRM fields to web forms and automate form filling across multiple pages.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting",
+    "sidePanel",
+    "cookies",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>",
+    "https://base.amberstudent.com/*"
+  ],
+  "action": {
+    "default_title": "Open CRM Form Filler"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}
