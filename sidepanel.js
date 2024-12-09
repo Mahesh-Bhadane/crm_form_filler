@@ -91,11 +91,11 @@ async function submitFormId(elements) {
     );
     const providerData = await providerResponse.json();
 
-    if (providerData.message !== "Records fetched successfully") {
+    if (providerData.message !== "success") {
       throw new Error("Failed to fetch provider data");
     }
 
-    const data = providerData.data;
+    const data = providerData.data.result;
 
     // Send the formId to the background script and await the response
     const formResponse = await new Promise((resolve, reject) => {
@@ -655,9 +655,11 @@ function createFieldMappings(inputs) {
     }
 
     const mappingData = {
-      provider_name: selectedProvider,
-      provider_id: parseInt(providerInput.dataset.providerId),
-      form_mappings: [],
+      crm_form_filler: {
+        provider_name: selectedProvider,
+        provider_id: parseInt(providerInput.dataset.providerId),
+        form_mappings: [],
+      },
     };
 
     mappingCards.forEach((card) => {
@@ -667,12 +669,12 @@ function createFieldMappings(inputs) {
         "";
 
       const mapping = {
-        referencein_PMG_website: card.querySelector(".reference-input").value,
+        referencein_pmg_website: card.querySelector(".reference-input").value,
         value_of_the_field: card.querySelector(".field-name-input").value,
         examplein_api_response: card.querySelector(".example-input").value,
         external_reference_key: externalReferenceKey,
       };
-      mappingData.form_mappings.push(mapping);
+      mappingData.crm_form_filler.form_mappings.push(mapping);
     });
 
     console.log("Sending mapping data:", mappingData);
@@ -960,8 +962,7 @@ function createFieldMappings(inputs) {
         }
 
         .provider-dropdown:not(.hidden) {
-            visibility: visible;
-            opacity: 1;
+            display: block;
         }
 
         .provider-option {
@@ -1426,20 +1427,23 @@ function displayResponseTable(data) {
 
   // Create table rows for each data entry
   data.forEach((item) => {
-    const row = document.createElement("tr");
-    const rowData = [
-      item.id,
-      item.referencein_pmg_website,
-      item.value_of_the_field,
-      item.external_reference_key,
-      item.examplein_api_response,
-    ];
-    rowData.forEach((text) => {
-      const cell = document.createElement("td");
-      cell.textContent = text;
-      row.appendChild(cell);
-    });
-    table.appendChild(row);
+    // Check if the "Value of the Field" is not empty
+    if (item.value_of_the_field) { // Only create a row if the value is not empty
+      const row = document.createElement("tr");
+      const rowData = [
+        item.id,
+        item.referencein_pmg_website,
+        item.value_of_the_field,
+        item.external_reference_key,
+        item.examplein_api_response,
+      ];
+      rowData.forEach((text) => {
+        const cell = document.createElement("td");
+        cell.textContent = text;
+        row.appendChild(cell);
+      });
+      table.appendChild(row);
+    }
   });
 
   // Append the table to the wrapper
@@ -1525,19 +1529,24 @@ function displayKeyValueTable(key, value) {
   const table = tableContainer.querySelector("table");
   const existingRow = Array.from(table.querySelectorAll("tr")).slice(1).find(row => row.cells[0].textContent === key); // Find existing row by key
 
-  if (existingRow) {
-    // If the key exists, update the value
-    existingRow.cells[1].textContent = value; // Update the value cell
-  } else {
-    // If the key does not exist, add a new row
-    const row = document.createElement("tr");
-    const rowData = [key, value];
-    rowData.forEach((text) => {
-      const cell = document.createElement("td");
-      cell.textContent = text;
-      row.appendChild(cell);
-    });
-    table.appendChild(row);
+  if (value) { // Check if value is present
+    if (existingRow) {
+      // If the key exists, update the value
+      existingRow.cells[1].textContent = value; // Update the value cell
+    } else {
+      // If the key does not exist, add a new row
+      const row = document.createElement("tr");
+      const rowData = [key, value];
+      rowData.forEach((text) => {
+        const cell = document.createElement("td");
+        cell.textContent = text;
+        row.appendChild(cell);
+      });
+      table.appendChild(row);
+    }
+  } else if (existingRow) {
+    // If the value is not present and the row exists, remove the row
+    table.deleteRow(existingRow.rowIndex);
   }
   
   // Add CSS for the table
