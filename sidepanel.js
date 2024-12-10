@@ -94,20 +94,9 @@ async function submitFormId(elements) {
 
     const data = providerData.data.result;
 
-    const formResponse = await new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage(
-        { action: "submitFormId", formId: formId },
-        function (response) {
-          if (chrome.runtime.lastError) {
-            reject(new Error(chrome.runtime.lastError));
-          } else {
-            resolve(response);
-          }
-        }
-      );
-    });
+    const formResponse = await fetchForm(formId);
 
-    if (formResponse && formResponse.success) {
+    if (formResponse) {
       const formData = formResponse.data;
       console.log({ formData });
 
@@ -202,6 +191,17 @@ async function submitFormId(elements) {
     submitButton.textContent = "Prefill Data";
   }
 }
+
+async function fetchForm(formId) {
+    const response = await fetch(`${API_BASE_URL}/forms/${formId}`);
+  
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  
+    const responseData = await response.json();
+    return responseData;
+  }
 
 function getValueFromPath(obj, path) {
   return path.split(".").reduce((o, key) => (o || {})[key], obj);
