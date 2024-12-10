@@ -2,122 +2,38 @@
 <html>
 <head>
   <title>CRM Form Filler</title>
+  <link rel="stylesheet" href="styles.css">
   <style>
-    body { 
-      width: 320px; 
-      padding-left: 5px; 
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background-color: #f5f5f7;
-    }
-
-    h1 {
-      color: #2c3e50;
-      font-size: 24px;
-      /* margin-bottom: 25px; */
-      text-align: center;
-    }
-
-    button {
-      width: 100%;
-      margin: 5px 0;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      background-color: #007aff;
-      color: white;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-
-    input, select {
-      width: 100%;
-      margin: 8px 0;
-      padding: 5px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 14px;
-      box-sizing: border-box;
-    }
-
-    #feedback {
-      margin-top: 15px;
-      padding: 10px;
-      border-radius: 6px;
-      color: #2e7d32;
-      font-size: 14px;
-    }
-
-    #msg {
-      margin-top: 15px;
-      padding: 10px;
-      border-radius: 6px;
-      color: #c22626;
-      font-size: 14px;
-    }
-    
-    .mapping-row {
-      margin-bottom: 15px;
-      padding: 10px;
-      background-color: white;
-      border-radius: 6px;
+    #crmDataInputs {
+      background-color: white; 
+      border-radius: 8px; 
+      padding: 20px; 
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-
-    /* #feedback { margin-top: 10px; font-weight: bold; }
-    .mapping-row { margin-bottom: 10px; } */
-    #mappingStatus { font-weight: bold; color: green; }
-    #crmDataInputs { display: none; }
-    /* #fetchCRMData { display: none; } */
-
-    .loader {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
-
-.loader .spinner {
-    border: 8px solid rgba(255, 255, 255, 0.3);
-    border-top: 8px solid #007bff; /* Change this color to match your theme */
-    border-radius: 50%;
-    width: 50px; /* Size of the spinner */
-    height: 50px; /* Size of the spinner */
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+    #fetchCRMData, #createDefaultMapping {
+      display: none;
+    }
+    #mappingSection {
+      display: none;
+    }
   </style>
 </head>
 <body>
   <h1>CRM Form Filler</h1>
   <div id="providerSelect"></div>
-  <button id="fetchCRMData" style="display: none;">Fetch CRM Data</button>  
-  <button id="createDefaultMapping" style="display: none;">Create Mapping</button>
+  <button id="fetchCRMData">Fetch CRM Data</button>  
+  <button id="createDefaultMapping">Create Mapping</button>
 
-  <div id="crmDataInputs" style="background-color: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+  <div id="crmDataInputs">
     <input type="text" id="formId" placeholder="Enter CRM Form ID">
-    <!-- <input type="text" id="provider" placeholder="Enter Provider Name"> -->
     <button id="submitFormId">Prefill Data</button>
     <div id="feedback"></div>
   </div>
   <div id="mappingContainer"></div>
-  <div id="mappingSection" style="display: none;">
+  <div id="mappingSection">
     <button id="submitMapping">Submit Mapping</button>
   </div>
   <div id="msg"></div>
-  <script src="sidepanel.js"></script>
+  <script type="module" src="sidepanel.js"></script>
 </body>
 </html>
