@@ -3,6 +3,8 @@ import { fieldOptionsWithExamples } from "./fieldOptions.js";
 let isDataLoaded = false;
 let isResponseTableVisible = true;
 
+const API_BASE_URL = "http://localhost:3002";
+
 function ensureContentScriptLoaded(callback) {
   chrome.tabs.query(
     { active: true, currentWindow: true },
@@ -82,7 +84,7 @@ async function submitFormId(elements) {
 
   try {
     const providerResponse = await fetch(
-      `http://localhost:3002/crm_form_fillers?provider_id=${providerId}`
+      `${API_BASE_URL}/crm_form_fillers?provider_id=${providerId}`
     );
     const providerData = await providerResponse.json();
 
@@ -474,7 +476,7 @@ function createFieldMappings(inputs) {
 
     try {
       // Make a POST request to the API
-      const response = await fetch("http://localhost:3002/crm_form_fillers", {
+      const response = await fetch(`${API_BASE_URL}/crm_form_fillers`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -519,7 +521,7 @@ async function fetchProviders() {
 
     while (hasMoreData) {
       const response = await fetch(
-        `https://base.amberstudent.com/providers?p=${page}&limit=${pageSize}&sort_key=created&sort_order=desc&type=all`
+        `${API_BASE_URL}/providers?p=${page}&limit=${pageSize}&sort_key=created&sort_order=desc&type=all`
       );
 
       if (!response.ok) {
