@@ -709,6 +709,32 @@ document.addEventListener("DOMContentLoaded", async function () {
   if (submitButton) {
     submitButton.addEventListener("click", submitFormId);
   }
+  // Check for provider_id in URL parameters
+  chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+    if (tabs[0]) {
+      let currentTabUrl = tabs[0].url;
+
+      const url = new URL(currentTabUrl.split('?')[0] + '?' + currentTabUrl.split('?').slice(1).join('&'));
+      const providerId = url.searchParams.get("provider_id");
+      const formId = url.searchParams.get("form_id");
+      
+      if (providerId) {
+        const provider = providers.find(p => p.id === parseInt(providerId));
+        if (provider) {
+          providerInput.value = provider.name.replace(/\b\w/g, (char) => char.toUpperCase());
+          providerInput.dataset.providerId = provider.id;
+          if (createMappingButton) createMappingButton.style.display = "block";
+          if (fetchCRMButton) fetchCRMButton.style.display = "block";
+        }
+      }
+
+      if (formId) {
+        document.getElementById("formId").value = formId;
+      }
+    } else {
+      console.log("No active tab found.");
+    }
+  });
 });
 
 function showFeedback(message) {
