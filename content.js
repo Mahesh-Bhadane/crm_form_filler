@@ -20,7 +20,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     document.querySelectorAll("input, select, textarea").forEach((element) => {
       let identifier = "";
 
-      // Get the most specific identifier available
       if (element.id) {
         identifier = `#${element.id}`;
       } else if (element.className) {
@@ -46,9 +45,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   } else if (request.action === "highlightElement") {
     const element = findElementByIdentifier(request.identifier);
     if (element) {
-      // Remove any existing highlights
       removeAllHighlights();
-      // Add highlight to the element
       highlightElement(element);
     }
     return true;
@@ -206,7 +203,7 @@ function recordChange(e) {
     }
 
     chrome.runtime.sendMessage({ action: "stepRecorded", step: step });
-    console.log("Step recorded:", step); // Add this line for debugging
+    console.log("Step recorded:", step); 
   }
 }
 
@@ -261,17 +258,17 @@ function recordSelect(e) {
 }
 
 function runConfiguration(configuration) {
-  console.log("Running configuration:", configuration); // Add this line for debugging
+  console.log("Running configuration:", configuration); 
   for (const [crmField, selector] of Object.entries(configuration.mapping)) {
     const element = document.querySelector(selector);
     if (element) {
-      element.value = "CRM_VALUE_FOR_" + crmField; // Replace with actual CRM value
+      element.value = "CRM_VALUE_FOR_" + crmField; 
       element.dispatchEvent(new Event("change", { bubbles: true }));
     }
   }
 
   configuration.steps.forEach((step) => {
-    console.log("Executing step:", step); // Add this line for debugging
+    console.log("Executing step:", step); 
     const element = document.querySelector(step.selector);
     if (element) {
       switch (step.action) {
@@ -298,53 +295,9 @@ function runConfiguration(configuration) {
           break;
       }
     } else {
-      console.log("Element not found for selector:", step.selector); // Add this line for debugging
+      console.log("Element not found for selector:", step.selector); 
     }
   });
-}
-
-// Comment out or remove this line
-// if (elements.showMappings) elements.showMappings.addEventListener('click', showCurrentMappings);
-
-function showCurrentMappings() {
-  console.log("Current mapping:", currentMapping);
-  showFeedback("Current mapping logged to console", elements);
-}
-
-function findLabel(element) {
-  // Try to find a label for the input
-  let label = "";
-
-  // Check for label element
-  if (element.id) {
-    const labelElement = document.querySelector(`label[for="${element.id}"]`);
-    if (labelElement) {
-      label = labelElement.textContent.trim();
-    }
-  }
-
-  // Check for aria-label
-  if (!label && element.getAttribute("aria-label")) {
-    label = element.getAttribute("aria-label");
-  }
-
-  // Check for placeholder
-  if (!label && element.placeholder) {
-    label = element.placeholder;
-  }
-
-  // If no label found, use identifier
-  if (!label) {
-    if (element.id) {
-      label = `#${element.id}`;
-    } else if (element.name) {
-      label = `[name="${element.name}"]`;
-    } else if (element.className) {
-      label = `.${element.className.split(" ").join(".")}`;
-    }
-  }
-
-  return label;
 }
 
 function ensureContentScriptLoaded(callback) {
@@ -359,9 +312,8 @@ function ensureContentScriptLoaded(callback) {
       { action: "ping" },
       function (response) {
         if (chrome.runtime.lastError) {
-          // Content script not loaded, reload the tab
           chrome.tabs.reload(tabs[0].id, {}, function () {
-            setTimeout(callback, 1000); // Wait for reload
+            setTimeout(callback, 1000); 
           });
         } else {
           callback();
@@ -374,7 +326,6 @@ function ensureContentScriptLoaded(callback) {
 console.log("Content script loaded");
 
 function findElementByIdentifier(identifier) {
-  // Remove the '#' if present
   identifier = identifier.replace("#", "");
   return document.querySelector(`[id="${identifier}"], [name="${identifier}"]`);
 }
@@ -393,7 +344,6 @@ function highlightElement(element) {
   element.style.outline = "2px solid #007bff";
   element.style.outlineOffset = "2px";
 
-  // Optional: Remove highlight after 2 seconds
   setTimeout(() => {
     element.classList.remove("extension-highlight");
     element.style.removeProperty("outline");
@@ -401,7 +351,6 @@ function highlightElement(element) {
   }, 2000);
 }
 
-// Add these CSS styles to handle input highlighting
 const style = document.createElement("style");
 style.textContent = `
     .recording-highlight:hover {
@@ -411,19 +360,15 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Update the keybind recording listener
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "startRecordingKeybind") {
-    // Add recording class to body to enable hover effects
     document.body.classList.add("recording-mode");
 
-    // Add hover effect to all input elements
     const inputs = document.querySelectorAll("input");
     inputs.forEach((input) => {
       input.classList.add("recording-highlight");
     });
 
-    // Add one-time click listener to document
     const clickHandler = function (e) {
       if (e.target.tagName === "INPUT") {
         let identifier =
@@ -433,19 +378,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             e.target
           )}`;
 
-        // Remove recording highlights from all inputs
         document.querySelectorAll(".recording-highlight").forEach((el) => {
           el.classList.remove("recording-highlight");
         });
         document.body.classList.remove("recording-mode");
 
-        // Send the identifier back to the extension
         chrome.runtime.sendMessage({
           action: "keybindRecorded",
           identifier: "#" + identifier,
         });
 
-        // Remove the click listener
         document.removeEventListener("click", clickHandler);
       }
     };

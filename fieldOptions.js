@@ -15,6 +15,10 @@ export const fieldOptionsWithExamples = {
       example: "Doe",
       external_reference_key: "user_details.name",
     },
+    fullName: {
+      example: "John Doe",
+      external_reference_key: "user_details.name",
+    },
     email: {
       example: "john.doe@example.com",
       external_reference_key: "data_formatted.alternate_email",

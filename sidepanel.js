@@ -3,7 +3,7 @@ import { fieldOptionsWithExamples } from "./fieldOptions.js";
 let isDataLoaded = false;
 let isResponseTableVisible = true;
 
-const API_BASE_URL = "http://localhost:3002";
+const API_BASE_URL = "https://base.amberstudent.com";
 
 function ensureContentScriptLoaded(callback) {
   chrome.tabs.query(
@@ -92,6 +92,11 @@ async function submitFormId(elements) {
       throw new Error("Failed to fetch provider data");
     }
 
+    if (!providerData.data.result || providerData.data.result.length === 0) {
+      showFeedback("Mapping does not exist..!!", elements);
+      return; 
+    }
+
     const data = providerData.data.result;
 
     const formResponse = await fetchForm(formId);
@@ -141,14 +146,23 @@ async function submitFormId(elements) {
                 const externalKey = item.external_reference_key;
 
                 const valueToFill = getValueFromPath(formData, externalKey);
-                console.log({ valueToFill });
+                // Check if referenceIdentifier is 'firstName' and split it
+                const processedValueToFill = referenceIdentifier === 'firstName' 
+                    ? valueToFill.split(' ')[0] 
+                    : referenceIdentifier === 'lastName' 
+                        ? valueToFill.split(' ').slice(1).join(' ') 
+                        : referenceIdentifier === 'dateOfBirth'
+                            ? formatDate(valueToFill)
+                            : valueToFill;
+
+
                 if (valueToFill !== undefined) {
                   chrome.tabs.sendMessage(
                     tabs[0].id,
                     {
                       action: "fillInputField",
                       identifier: referenceIdentifier,
-                      value: valueToFill,
+                      value: processedValueToFill,
                     },
                     function (response) {
                       if (chrome.runtime.lastError) {
@@ -176,7 +190,7 @@ async function submitFormId(elements) {
         });
       });
 
-      showFeedback("Data prefetched successfully", elements);
+      showFeedback("Data prefetched successfully..!!", elements);
     } else {
       showFeedback(
         "Error fetching CRM data: " +
@@ -853,27 +867,23 @@ function displayResponseTable(data) {
 }
 
 function displayKeyValueTable(key, value) {
-  // Hide the response table if it is visible
   const responseTableContainer = document.getElementById(
     "responseTableContainer"
   );
   if (responseTableContainer && isResponseTableVisible) {
-    responseTableContainer.style.display = "none"; // Hide the response table
-    isResponseTableVisible = false; // Update visibility state
+    responseTableContainer.style.display = "none"; 
+    isResponseTableVisible = false; 
   }
 
-  // Check if the table already exists
   let tableContainer = document.getElementById("keyValueTableContainer");
   if (!tableContainer) {
     tableContainer = document.createElement("div");
     tableContainer.id = "keyValueTableContainer";
     document.body.appendChild(tableContainer);
 
-    // Create the table
     const table = document.createElement("table");
     table.className = "key-value-table";
 
-    // Create table header
     const headerRow = document.createElement("tr");
     const headers = ["Key", "Value"];
     headers.forEach((headerText) => {
@@ -885,19 +895,15 @@ function displayKeyValueTable(key, value) {
     tableContainer.appendChild(table);
   }
 
-  // Add or update the row for the key-value pair
   const table = tableContainer.querySelector("table");
   const existingRow = Array.from(table.querySelectorAll("tr"))
     .slice(1)
-    .find((row) => row.cells[0].textContent === key); // Find existing row by key
+    .find((row) => row.cells[0].textContent === key); 
 
   if (value) {
-    // Check if value is present
     if (existingRow) {
-      // If the key exists, update the value
-      existingRow.cells[1].textContent = value; // Update the value cell
+      existingRow.cells[1].textContent = value; 
     } else {
-      // If the key does not exist, add a new row
       const row = document.createElement("tr");
       const rowData = [key, value];
       rowData.forEach((text) => {
@@ -908,7 +914,14 @@ function displayKeyValueTable(key, value) {
       table.appendChild(row);
     }
   } else if (existingRow) {
-    // If the value is not present and the row exists, remove the row
     table.deleteRow(existingRow.rowIndex);
   }
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); 
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
 }
