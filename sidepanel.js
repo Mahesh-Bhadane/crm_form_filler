@@ -725,12 +725,31 @@ document.addEventListener("DOMContentLoaded", async function () {
           providerInput.dataset.providerId = provider.id;
           if (createMappingButton) createMappingButton.style.display = "block";
           if (fetchCRMButton) fetchCRMButton.style.display = "block";
+          localStorage.setItem("providerId", providerId);
+        }
+      } else {
+        const storedProviderId = localStorage.getItem("providerId");
+        if (storedProviderId) {
+          const provider = providers.find(p => p.id === parseInt(storedProviderId));
+          if (provider) {
+            providerInput.value = provider.name.replace(/\b\w/g, (char) => char.toUpperCase());
+            providerInput.dataset.providerId = provider.id;
+            if (createMappingButton) createMappingButton.style.display = "block";
+            if (fetchCRMButton) fetchCRMButton.style.display = "block";
+          }
         }
       }
 
       if (formId) {
         document.getElementById("formId").value = formId;
+        localStorage.setItem("formId", formId);
+      } else {
+        const storedFormId = localStorage.getItem("formId");
+        if (storedFormId) {
+          document.getElementById("formId").value = storedFormId;
+        }
       }
+
     } else {
       console.log("No active tab found.");
     }
@@ -907,6 +926,9 @@ function displayKeyValueTable(key, value) {
     tableContainer.id = "keyValueTableContainer";
     document.body.appendChild(tableContainer);
 
+    const scrollableContainer = document.createElement("div");
+    scrollableContainer.className = "scrollable-table-container"; 
+
     const table = document.createElement("table");
     table.className = "key-value-table";
 
@@ -918,7 +940,8 @@ function displayKeyValueTable(key, value) {
       headerRow.appendChild(header);
     });
     table.appendChild(headerRow);
-    tableContainer.appendChild(table);
+    scrollableContainer.appendChild(table); // Append table to scrollable container
+    tableContainer.appendChild(scrollableContainer); // Append scrollable container to main container
   }
 
   const table = tableContainer.querySelector("table");

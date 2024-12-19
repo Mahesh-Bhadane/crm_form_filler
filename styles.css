@@ -381,3 +381,10 @@ select {
   margin-bottom: 10px;
   padding-top: 20px;
 }
+
+.scrollable-table-container {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
