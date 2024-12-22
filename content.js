@@ -1,7 +1,7 @@
-let isMapping = false;
-let isRecording = false;
-let crmFields = [];
-let currentCrmField = null;
+var isMapping = false;
+var isRecording = false;
+var crmFields = [];
+var currentCrmField = null;
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   console.log("Message received in content script:", request);
@@ -203,7 +203,7 @@ function recordChange(e) {
     }
 
     chrome.runtime.sendMessage({ action: "stepRecorded", step: step });
-    console.log("Step recorded:", step); 
+    console.log("Step recorded:", step);
   }
 }
 
@@ -258,17 +258,17 @@ function recordSelect(e) {
 }
 
 function runConfiguration(configuration) {
-  console.log("Running configuration:", configuration); 
+  console.log("Running configuration:", configuration);
   for (const [crmField, selector] of Object.entries(configuration.mapping)) {
     const element = document.querySelector(selector);
     if (element) {
-      element.value = "CRM_VALUE_FOR_" + crmField; 
+      element.value = "CRM_VALUE_FOR_" + crmField;
       element.dispatchEvent(new Event("change", { bubbles: true }));
     }
   }
 
   configuration.steps.forEach((step) => {
-    console.log("Executing step:", step); 
+    console.log("Executing step:", step);
     const element = document.querySelector(step.selector);
     if (element) {
       switch (step.action) {
@@ -295,7 +295,7 @@ function runConfiguration(configuration) {
           break;
       }
     } else {
-      console.log("Element not found for selector:", step.selector); 
+      console.log("Element not found for selector:", step.selector);
     }
   });
 }
@@ -313,7 +313,7 @@ function ensureContentScriptLoaded(callback) {
       function (response) {
         if (chrome.runtime.lastError) {
           chrome.tabs.reload(tabs[0].id, {}, function () {
-            setTimeout(callback, 1000); 
+            setTimeout(callback, 1000);
           });
         } else {
           callback();
@@ -323,11 +323,12 @@ function ensureContentScriptLoaded(callback) {
   });
 }
 
-console.log("Content script loaded");
-
 function findElementByIdentifier(identifier) {
   identifier = identifier.replace("#", "");
-  return document.querySelector(`[id="${identifier}"], [name="${identifier}"]`);
+  let element = document.getElementById(identifier);
+  if (element) return element;
+  element = document.querySelector(`[name="${identifier}"]`);
+  return element;
 }
 
 function removeAllHighlights() {
@@ -351,7 +352,7 @@ function highlightElement(element) {
   }, 2000);
 }
 
-const style = document.createElement("style");
+var style = document.createElement("style");
 style.textContent = `
     .recording-highlight:hover {
         outline: 2px solid red !important;
@@ -404,13 +405,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log("Received message:", request);
   if (request.action === "highlightElement") {
     console.log("Highlighting element with identifier:", request.identifier);
-    const element = document.getElementById(request.identifier);
+    const element = document.getElementById(request.identifier) || document.querySelector(`[name="${request.identifier}"]`);
     if (element) {
       console.log("Element found:", element);
-      element.style.border = "2px solid red"; 
+      element.style.border = "2px solid red";
       sendResponse({ success: true });
       setTimeout(() => {
-        element.style.border = ""; 
+        element.style.border = "";
       }, 3000);
     } else {
       console.warn("Element not found for identifier:", request.identifier);
@@ -419,7 +420,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   if (request.action === "fillInputField") {
     const { identifier, value } = request;
-    const inputField = document.getElementById(identifier);
+    const inputField = document.getElementById(identifier) || document.querySelector(`[name="${identifier}"]`);
 
     if (inputField) {
       inputField.value = value;

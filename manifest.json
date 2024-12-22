@@ -5,10 +5,8 @@
   "description": "Map CRM fields to web forms and automate form filling across multiple pages.",
   "permissions": [
     "activeTab",
-    "storage",
     "scripting",
     "sidePanel",
-    "cookies",
     "tabs"
   ],
   "host_permissions": ["<all_urls>"],

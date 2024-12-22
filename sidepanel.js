@@ -69,7 +69,7 @@ function createDefaultMapping() {
 }
 
 async function submitFormId(elements) {
-  const formId = document.getElementById("formId")?.value;
+  const formId = document.querySelector("#formId, [name='formId']")?.value;
   const providerId =
     document.querySelector(".provider-input").dataset.providerId;
 
@@ -78,7 +78,7 @@ async function submitFormId(elements) {
     return;
   }
 
-  const submitButton = document.getElementById("submitFormId");
+  const submitButton = document.querySelector("#submitFormId, [name='submitFormId']");
   submitButton.disabled = true;
   submitButton.textContent = "Loading...";
 
@@ -222,7 +222,7 @@ function getValueFromPath(obj, path) {
 }
 
 function createFieldMappings(inputs) {
-  const mappingContainer = document.getElementById("mappingContainer");
+  const mappingContainer = document.querySelector("#mappingContainer, [name='mappingContainer']");
   if (!mappingContainer) {
     showFeedback("Error: Mapping container not found");
     return;
@@ -644,7 +644,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   if (createMappingButton) {
     createMappingButton.addEventListener("click", () => {
-      const mappingContainer = document.getElementById("mappingContainer");
+      const mappingContainer = document.querySelector("#mappingContainer, [name='mappingContainer']");
 
       if (
         mappingContainer.style.display === "none" ||
@@ -667,12 +667,8 @@ document.addEventListener("DOMContentLoaded", async function () {
   if (fetchCRMButton) {
     fetchCRMButton.addEventListener("click", () => {
       const crmDataInputs = document.getElementById("crmDataInputs");
-      const keyValueTableContainer = document.getElementById(
-        "keyValueTableContainer"
-      );
-      const responseTableContainer = document.getElementById(
-        "responseTableContainer"
-      );
+      const keyValueTableContainer = document.querySelector("#keyValueTableContainer, [name='keyValueTableContainer']");
+      const responseTableContainer = document.querySelector("#responseTableContainer, [name='responseTableContainer']");
 
       if (crmDataInputs) {
         if (
@@ -705,7 +701,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
   }
 
-  const submitButton = document.getElementById("submitFormId");
+  const submitButton = document.querySelector("#submitFormId, [name='submitFormId']");
   if (submitButton) {
     submitButton.addEventListener("click", submitFormId);
   }
