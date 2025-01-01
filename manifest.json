@@ -11,7 +11,8 @@
   ],
   "host_permissions": ["<all_urls>"],
   "action": {
-    "default_title": "Open CRM Form Filler"
+    "default_title": "Open CRM Form Filler",
+    "default_popup": "sidepanel.html"
   },
   "side_panel": {
     "default_path": "sidepanel.html"
