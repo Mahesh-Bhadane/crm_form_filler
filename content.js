@@ -18,6 +18,11 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     const inputs = [];
 
     document.querySelectorAll("input, select, textarea").forEach((element) => {
+      const style = window.getComputedStyle(element);
+      if (style.display === "none" || style.visibility === "hidden" || style.opacity === "0") {
+        return;
+      }
+
       let identifier = "";
 
       if (element.id) {
