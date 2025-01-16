@@ -147,9 +147,9 @@ async function submitFormId(elements) {
 
                 const valueToFill = getValueFromPath(formData, externalKey);
                 // Check if referenceIdentifier is 'firstName' and split it
-                const processedValueToFill = referenceIdentifier === 'firstName' 
+                const processedValueToFill = (referenceIdentifier === 'firstName' || referenceIdentifier === 'first_name')
                     ? valueToFill.split(' ')[0] 
-                    : referenceIdentifier === 'lastName' 
+                    : (referenceIdentifier === 'lastName' || referenceIdentifier === 'last_name')
                         ? valueToFill.split(' ').slice(1).join(' ') 
                         : referenceIdentifier === 'dateOfBirth'
                             ? formatDate(valueToFill)

@@ -27,6 +27,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
       if (element.id) {
         identifier = `#${element.id}`;
+      } else if (element.name) {
+        identifier = `#${element.name}`;
       } else if (element.className) {
         identifier = `.${element.className.split(" ").join(".")}`;
       }
@@ -370,17 +372,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "startRecordingKeybind") {
     document.body.classList.add("recording-mode");
 
-    const inputs = document.querySelectorAll("input");
+    const inputs = document.querySelectorAll("input, select, textarea");
     inputs.forEach((input) => {
       input.classList.add("recording-highlight");
     });
 
     const clickHandler = function (e) {
-      if (e.target.tagName === "INPUT") {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT" || e.target.tagName === "TEXTAREA") {
         let identifier =
           e.target.id ||
           e.target.name ||
-          `input-${Array.from(document.querySelectorAll("input")).indexOf(
+          `input-${Array.from(document.querySelectorAll("input, select, textarea")).indexOf(
             e.target
           )}`;
 
