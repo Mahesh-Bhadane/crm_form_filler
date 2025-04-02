@@ -40,31 +40,39 @@ function ensureContentScriptLoaded(callback) {
 
 function createDefaultMapping() {
   ensureContentScriptLoaded(() => {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      if (!tabs[0]?.id) {
-        showFeedback("No active tab found");
-        return;
-      }
+    const mappingContainer = document.querySelector("#mappingContainer, [name='mappingContainer']");
+    if (!mappingContainer) {
+      showFeedback("Error: Mapping container not found");
+      return;
+    }
+    mappingContainer.innerHTML = ""; 
+    createFieldMappings([]);
+  // ensureContentScriptLoaded(() => {
+  //   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+  //     if (!tabs[0]?.id) {
+  //       showFeedback("No active tab found");
+  //       return;
+  //     }
 
-      chrome.tabs.sendMessage(
-        tabs[0].id,
-        { action: "scanPageInputs" },
-        function (response) {
-          if (chrome.runtime.lastError) {
-            showFeedback(
-              "Error scanning page: " + chrome.runtime.lastError.message
-            );
-            return;
-          }
+  //     chrome.tabs.sendMessage(
+  //       tabs[0].id,
+  //       { action: "scanPageInputs" },
+  //       function (response) {
+  //         if (chrome.runtime.lastError) {
+  //           showFeedback(
+  //             "Error scanning page: " + chrome.runtime.lastError.message
+  //           );
+  //           return;
+  //         }
 
-          if (response && response.inputs && response.inputs.length > 0) {
-            createFieldMappings(response.inputs);
-          } else {
-            showFeedback("No input fields found on the page");
-          }
-        }
-      );
-    });
+  //         if (response && response.inputs && response.inputs.length > 0) {
+  //           createFieldMappings(response.inputs);
+  //         } else {
+  //           showFeedback("No input fields found on the page");
+  //         }
+  //       }
+  //     );
+  //   });
   });
 }
 
@@ -146,12 +154,13 @@ async function submitFormId(elements) {
                 const externalKey = item.external_reference_key;
 
                 const valueToFill = getValueFromPath(formData, externalKey);
+                const identifier = item.value_of_the_field;
                 // Check if referenceIdentifier is 'firstName' and split it
-                const processedValueToFill = (referenceIdentifier === 'firstName' || referenceIdentifier === 'first_name')
+                const processedValueToFill = (identifier === 'firstName' || identifier === 'first_name')
                     ? valueToFill.split(' ')[0] 
-                    : (referenceIdentifier === 'lastName' || referenceIdentifier === 'last_name')
+                    : (identifier === 'lastName' || identifier === 'last_name')
                         ? valueToFill.split(' ').slice(1).join(' ') 
-                        : referenceIdentifier === 'dateOfBirth'
+                        : identifier === 'dateOfBirth'
                             ? formatDate(valueToFill)
                             : valueToFill;
 
@@ -230,7 +239,7 @@ function createFieldMappings(inputs) {
 
   mappingContainer.innerHTML = "";
 
-  inputs.forEach((input, index) => {
+  // inputs.forEach((input, index) => {
     const mappingCard = document.createElement("div");
     mappingCard.className = "mapping-card";
 
@@ -245,14 +254,38 @@ function createFieldMappings(inputs) {
       const currentCard = e.target.closest(".mapping-card");
       const newCard = mappingCard.cloneNode(true);
 
+      // Reset inputs and message for the new card
       newCard.querySelectorAll("input").forEach((input) => (input.value = ""));
       const newReferenceInput = newCard.querySelector(".reference-input");
       newReferenceInput.readOnly = false;
+
+      // Reset and show the message for the new card
+      const newMessageElement = newCard.querySelector(".info-message");
+      if (newMessageElement) {
+        newMessageElement.style.display = "block";
+      }
 
       const newFieldNameInput = newCard.querySelector(".field-name-input");
       const newDropdownList = newCard.querySelector(".dropdown-list");
       const newExampleInput = newCard.querySelector(".example-input");
 
+      newFieldNameInput.disabled = true;
+
+      // Update the record keybind button for the new card
+      const newRecordKeybindBtn = newCard.querySelector(".record-keybind-btn");
+      if (newRecordKeybindBtn) {
+        newRecordKeybindBtn.style.display = "block";
+        newRecordKeybindBtn.style.backgroundColor = ""; // Reset button color
+        newRecordKeybindBtn.onclick = () => {
+          if (newReferenceInput) {
+            newReferenceInput.readOnly = false;
+            newFieldNameInput.disabled = false;
+            startRecordingKeybind(newReferenceInput, newRecordKeybindBtn);
+          }
+        };
+      }
+
+      // Rest of the existing add button code...
       newFieldNameInput.onclick = (e) => {
         e.stopPropagation();
         newDropdownList.classList.toggle("hidden");
@@ -265,8 +298,7 @@ function createFieldMappings(inputs) {
         optionElement.textContent = option;
         optionElement.onclick = () => {
           newFieldNameInput.value = option;
-          newExampleInput.value =
-            fieldOptionsWithExamples[option]?.example || "";
+          newExampleInput.value = fieldOptionsWithExamples[option]?.example || "";
           newDropdownList.classList.add("hidden");
         };
         newDropdownList.appendChild(optionElement);
@@ -275,7 +307,6 @@ function createFieldMappings(inputs) {
       newFieldNameInput.oninput = (e) => {
         const searchTerm = e.target.value.toLowerCase();
         const options = newDropdownList.querySelectorAll(".dropdown-option");
-
         options.forEach((option) => {
           const text = option.textContent.toLowerCase();
           option.style.display = text.includes(searchTerm) ? "block" : "none";
@@ -301,18 +332,6 @@ function createFieldMappings(inputs) {
         }
       });
 
-      const newRecordKeybindBtn = newCard.querySelector(".record-keybind-btn");
-      if (newRecordKeybindBtn) {
-        newRecordKeybindBtn.style.display = "block";
-      }
-      newRecordKeybindBtn.onclick = () => {
-        const newReferenceInput = newCard.querySelector(".reference-input");
-        if (newReferenceInput) {
-          newReferenceInput.readOnly = false;
-          startRecordingKeybind(newReferenceInput, newRecordKeybindBtn);
-        }
-      };
-
       newCard.querySelector(".add-btn").onclick = addButton.onclick;
       newCard.querySelector(".remove-btn").onclick = () => newCard.remove();
       currentCard.after(newCard);
@@ -336,8 +355,14 @@ function createFieldMappings(inputs) {
     const referenceInput = document.createElement("input");
     referenceInput.type = "text";
     referenceInput.className = "reference-input";
-    referenceInput.value = input.identifier;
+    // referenceInput.value = input.identifier;
     referenceInput.readOnly = true;
+
+    const messageReferenceElement = document.createElement("div");
+    messageReferenceElement.className = "info-message"; 
+    messageReferenceElement.textContent = "Please select input field in the form."; 
+    messageReferenceElement.style.color = "black"; 
+    messageReferenceElement.style.display = "block";
 
     // Add Record Keybind button
     const recordKeybindBtn = document.createElement("button");
@@ -347,6 +372,7 @@ function createFieldMappings(inputs) {
       const referenceInput = mappingCard.querySelector(".reference-input");
       if (referenceInput) {
         referenceInput.readOnly = false;
+        fieldNameInput.disabled = false; 
         startRecordingKeybind(referenceInput, recordKeybindBtn);
       }
     };
@@ -354,6 +380,8 @@ function createFieldMappings(inputs) {
     referenceSection.appendChild(referenceLabel);
     referenceSection.appendChild(referenceInput);
     referenceSection.appendChild(recordKeybindBtn);
+    referenceSection.appendChild(messageReferenceElement); 
+
 
     // Add click handler to reference input
     referenceInput.addEventListener("click", function () {
@@ -380,7 +408,8 @@ function createFieldMappings(inputs) {
     fieldNameInput.type = "text";
     fieldNameInput.className = "field-name-input";
     fieldNameInput.placeholder = "Type or select a field";
-    fieldNameInput.readOnly = false;
+    fieldNameInput.disabled = true;
+    fieldNameInput.title = "Please fill value in Reference in PMG website"; 
 
     const dropdownList = document.createElement("div");
     dropdownList.className = "dropdown-list hidden";
@@ -443,12 +472,13 @@ function createFieldMappings(inputs) {
     mappingCard.appendChild(fieldNameSection);
     mappingCard.appendChild(exampleSection);
     mappingContainer.appendChild(mappingCard);
-  });
+  // });
 
   // After the loop that creates mapping cards, add the submit button
   const submitButton = document.createElement("button");
   submitButton.id = "submitMapping";
   submitButton.className = "submit-mapping-btn";
+  submitButton.style.backgroundColor = "green";
   submitButton.textContent = "Submit Mapping";
   submitButton.addEventListener("click", async function () {
     const mappingCards = document.querySelectorAll(".mapping-card");
@@ -782,6 +812,9 @@ function startRecordingKeybind(referenceInput, recordButton) {
   recordButton.classList.add("recording");
   recordButton.style.backgroundColor = "red";
 
+  // Find the info message element that's a sibling of the referenceInput
+  const messageElement = referenceInput.parentElement.querySelector('.info-message');
+
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     if (!tabs[0]?.id) return;
 
@@ -806,6 +839,11 @@ function startRecordingKeybind(referenceInput, recordButton) {
         ) {
           if (message.action === "keybindRecorded") {
             referenceInput.value = message.identifier;
+            
+            // Hide the message when keybind is recorded
+            if (messageElement) {
+              messageElement.style.display = "none";
+            }
 
             referenceInput.onclick = function () {
               chrome.tabs.query(

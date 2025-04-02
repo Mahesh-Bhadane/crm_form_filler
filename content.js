@@ -62,6 +62,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       let identifier = "";
       if (element.id) {
         identifier = `#${element.id}`;
+      } else if (element.name) {
+        identifier = `#${element.name}`;
       } else if (element.className) {
         identifier = `.${element.className.split(" ").join(".")}`;
       }
