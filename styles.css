@@ -276,6 +276,10 @@ select {
   background-color: #0056b3;
 }
 
+.field-name-input:disabled {
+  cursor: not-allowed !important;
+}
+
 .field-name-input {
   background-color: white !important;
   cursor: text !important;
